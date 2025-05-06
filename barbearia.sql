@@ -15,9 +15,10 @@ CREATE TABLE Funcionarios (
     nomeFunc VARCHAR(100) NOT NULL,
     loginFunc VARCHAR(50) NOT NULL UNIQUE,
     senhaFunc VARCHAR(10) NOT NULL,
-    cpfFunc CHAR(13) NOT NULL UNIQUE,
+    cpfFunc CHAR(14) NOT NULL UNIQUE,
     aluguel_cadeira DECIMAL(10,2) NOT NULL,
     telCelFunc CHAR(10) not NULL UNIQUE,
+    ativoFunc BOOLEAN DEFAULT TRUE,
     dataCadFunc TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -27,6 +28,7 @@ CREATE TABLE Clientes (
     nomeCli VARCHAR(100) NOT NULL,
     TelCelCli VARCHAR(10) NOT NULL,
     vipCli BOOLEAN DEFAULT FALSE,
+    ativoCli BOOLEAN DEFAULT TRUE,
     dataCadCli TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -89,6 +91,35 @@ CREATE TABLE Horarios_Disponiveis (
 );
 
 -- inserindo dados nas tabelas
+
+-- Tabela de Horários Fixos
+CREATE TABLE Horarios_Fixos (
+    idHorario INT AUTO_INCREMENT PRIMARY KEY,
+    horario TIME NOT NULL UNIQUE
+);
+
+-- Inserindo os horários de 50 em 50 minutos das 8:00 às 21:30
+INSERT INTO Horarios_Fixos (horario) VALUES 
+('08:00:00'),
+('08:50:00'),
+('09:40:00'),
+('10:30:00'),
+('11:20:00'),
+('12:10:00'),
+('13:00:00'),
+('13:50:00'),
+('14:40:00'),
+('15:30:00'),
+('16:20:00'),
+('17:10:00'),
+('18:00:00'),
+('18:50:00'),
+('19:40:00'),
+('20:30:00'),
+('21:20:00');
+
+-- Verificando os horários inseridos
+SELECT * FROM Horarios_Fixos;
 
 -- Inserindo na tabela de categorias
 INSERT INTO Categorias (nomeCategoria)
@@ -159,6 +190,7 @@ WHERE a.idAgendamento = 1;
 
 
 -- Visualizando as tabelas
+use barbearia;
 SELECT * FROM Funcionarios;
 SELECT * FROM Clientes;
 SELECT * FROM Servicos;
@@ -166,3 +198,25 @@ SELECT * FROM Categorias;
 SELECT * FROM Produtos;
 SELECT * FROM Agendamentos;
 SELECT * FROM Detalhes_Agendamentos;
+select * from Horarios_Disponiveis;
+
+use barbearia;
+INSERT INTO Horarios_Disponiveis (idFunc, dataHorario, disponivel)
+SELECT 
+    f.idFunc, -- Pega o ID de cada funcionário
+    CONCAT(CURDATE(), ' ', h.horario) AS dataHorario, -- Combina data atual com horário fixo
+    TRUE -- Todos horários inicialmente disponíveis
+FROM Horarios_Fixos h
+CROSS JOIN Funcionarios f -- Combina cada horário com cada funcionário
+WHERE f.ativoFunc = TRUE; -- Opcional: só para funcionários ativos
+
+-- Verificar os horários criados
+SELECT 
+    hd.idHorario,
+    f.nomeFunc AS funcionario,
+    DATE_FORMAT(hd.dataHorario, '%d/%m/%Y %H:%i') AS horario,
+    CASE WHEN hd.disponivel THEN 'Disponível' ELSE 'Ocupado' END AS status
+FROM Horarios_Disponiveis hd
+JOIN Funcionarios f ON hd.idFunc = f.idFunc
+WHERE DATE(hd.dataHorario) = CURDATE() and f.idFunc = 1  and hd.disponivel = TRUE-- clausula para mostrar apenas horários disponiveis, so alterar true para false, caso queira mudar
+ORDER BY f.nomeFunc, hd.dataHorario;
