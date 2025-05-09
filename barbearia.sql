@@ -1,5 +1,5 @@
 -- Criação do banco de dados
-drop database barbearia;
+drop database if EXISTS barbearia;
 CREATE DATABASE IF NOT EXISTS barbearia;
 USE barbearia;
 
@@ -47,16 +47,18 @@ CREATE TABLE Produtos (
     nomeProd VARCHAR(100) NOT NULL,
     descProd VARCHAR(255) NOT NULL,  
     precoUnitario DECIMAL(10,2) NOT NULL,
-    qtdProd INT NOT NULL,
+    qtdProd INT not null,
     idCategoria INT NOT NULL,
+    ativoProd BOOLEAN DEFAULT true,
     FOREIGN KEY (idCategoria) REFERENCES Categorias (idCategoria)
 );
 
 -- Tabela de Agendamentos
 CREATE TABLE Agendamentos (
     idAgendamento INT AUTO_INCREMENT PRIMARY KEY,
-    dataAgendamento DATETIME NOT NULL UNIQUE,
+    dataAgendamento DATETIME NOT NULL,
     idCli INT NOT NULL,
+    idFunc int not null,
     sinalAgendamento DECIMAL(10,2) DEFAULT 0,
     valorTotalAgendamento DECIMAL(10,2) DEFAULT NULL,
     statusAgendamento ENUM('agendado', 'concluido', 'cancelado', 'falta') DEFAULT 'agendado',
@@ -69,9 +71,9 @@ CREATE TABLE Detalhes_Agendamentos (
     idDetalhe INT AUTO_INCREMENT PRIMARY KEY,
     idAgendamento INT NOT NULL,
     idServ INT NOT NULL,
-    idProd INT NOT NULL,
+    idProd INT,
     qtdServicoAgendamento INT NOT NULL,
-    qtdProdutoAgendamento INT NOT NULL,
+    qtdProdutoAgendamento INT,
     subtotalDetalhe DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (idAgendamento) REFERENCES Agendamentos(idAgendamento),
     FOREIGN KEY (idServ) REFERENCES Servicos(idServ),
@@ -89,8 +91,6 @@ CREATE TABLE Horarios_Disponiveis (
     FOREIGN KEY (idFunc) REFERENCES Funcionarios(idFunc),
     UNIQUE KEY (idFunc, dataHorario)
 );
-
--- inserindo dados nas tabelas
 
 -- Tabela de Horários Fixos
 CREATE TABLE Horarios_Fixos (
@@ -132,9 +132,6 @@ use barbearia;
 INSERT INTO Funcionarios (nomeFunc, loginFunc, senhaFunc, cpfFunc, aluguel_cadeira, telCelFunc)
 VALUES 
     ('Paulo', 'guidio', '230905', '428.663.258-39', 100.00, '96482-8962');
-
-
-
 -- Inserindo na tabela de clientes
 INSERT INTO Clientes (nomeCli, TelCelCli, vipCli)
 VALUES 
@@ -150,47 +147,9 @@ INSERT INTO Produtos (nomeProd, descProd, precoUnitario, qtdProd, idCategoria)
 VALUES 
     ('Coca-Cola', 'Refrigerante', 7.00, 10, 1),
     ('Gel', 'Bozano', 15.00, 10, 2);
-    
--- Inserindo na tabela de Agendamentos
-INSERT INTO Agendamentos (dataAgendamento, idCli, sinalAgendamento , valorTotalAgendamento)
-VALUES 
-    ('2025-04-22 16:30:00', 1, 15.00, 00.00);
-
--- Inserindo um único item na tabela de detalhes de agendamento
-INSERT INTO Detalhes_Agendamentos (
-    idAgendamento, idServ, idProd, qtdServicoAgendamento, qtdProdutoAgendamento, subtotalDetalhe
-)
-SELECT 
-    1,  -- ID do agendamento
-    Servicos.idServ,
-    Produtos.idProd,
-    1,  -- Quantidade do serviço (ajuste conforme necessário)
-    2,  -- Quantidade do produto (ajuste conforme necessário)
-    (Servicos.valorServ * 1 + Produtos.precoUnitario * 2) AS subtotal_detalhe  -- Calcula subtotal
-FROM Servicos
-JOIN Produtos ON Produtos.idProd = 2  -- ID do produto desejado
-WHERE Servicos.idServ = 1;  -- ID do serviço desejado
-
--- Atualizando total da tabela de agendamentos
-UPDATE Agendamentos a
-JOIN (
-    SELECT 
-        idAgendamento,
-        SUM(subtotalDetalhe) AS total
-    FROM Detalhes_Agendamentos
-    GROUP BY idAgendamento
-) d ON a.idAgendamento = d.idAgendamento
-SET 
-    a.valorTotalAgendamento = d.total,
-    a.sinalAgendamento = d.total * 0.5
-WHERE a.idAgendamento = 1;
-
-
-
-
-
 -- Visualizando as tabelas
 use barbearia;
+desc produtos;
 SELECT * FROM Funcionarios;
 SELECT * FROM Clientes;
 SELECT * FROM Servicos;
@@ -218,5 +177,5 @@ SELECT
     CASE WHEN hd.disponivel THEN 'Disponível' ELSE 'Ocupado' END AS status
 FROM Horarios_Disponiveis hd
 JOIN Funcionarios f ON hd.idFunc = f.idFunc
-WHERE DATE(hd.dataHorario) = CURDATE() and f.idFunc = 1  and hd.disponivel = TRUE-- clausula para mostrar apenas horários disponiveis, so alterar true para false, caso queira mudar
+WHERE DATE(hd.dataHorario) = CURDATE() and f.idFunc = 1-- clausula para mostrar apenas horários disponiveis, so alterar true para false, caso queira mudar
 ORDER BY f.nomeFunc, hd.dataHorario;
