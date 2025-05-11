@@ -1,5 +1,5 @@
 -- Criação do banco de dados
-drop database barbearia;
+drop database if EXISTS barbearia;
 CREATE DATABASE IF NOT EXISTS barbearia;
 USE barbearia;
 
@@ -51,7 +51,7 @@ CREATE TABLE Produtos (
     nomeProd VARCHAR(100) NOT NULL,
     descProd VARCHAR(255) NOT NULL,  
     precoUnitario DECIMAL(10,2) NOT NULL,
-    qtdProd INT NOT NULL,
+    qtdProd INT not null,
     idCategoria INT NOT NULL,
     ativoProd BOOLEAN DEFAULT true,
     FOREIGN KEY (idCategoria) REFERENCES Categorias (idCategoria)
@@ -97,8 +97,6 @@ CREATE TABLE Horarios_Disponiveis (
     UNIQUE KEY (idFunc, dataHorario)
 );
 
--- inserindo dados nas tabelas
-
 -- Tabela de Horários Fixos
 CREATE TABLE Horarios_Fixos (
     idHorario INT AUTO_INCREMENT PRIMARY KEY,
@@ -129,8 +127,13 @@ VALUES
     ('Bebidas'),
     ('Produtos de cabelo');
 
+INSERT INTO Funcionarios (nomeFunc, loginFunc, senhaFunc, cpfFunc, aluguel_cadeira, telCelFunc)
+VALUES 
+    ('Paulo', 'guidio', '230905', '428.663.258-39', 100.00, '96482-8962');
+
 -- Inserindo na tabela de serviços
 INSERT INTO Servicos (descServ, valorServ, tempoServ)
 VALUES 
     ('Corte de Cabelo Simples', 30.00, '00:45:00'),
     ('Barba', 20.00, '00:20:00');
+
