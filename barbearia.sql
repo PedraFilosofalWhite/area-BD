@@ -69,9 +69,9 @@ CREATE TABLE Detalhes_Agendamentos (
     idDetalhe INT AUTO_INCREMENT PRIMARY KEY,
     idAgendamento INT NOT NULL,
     idServ INT NOT NULL,
-    idProd INT NOT NULL,
+    idProd INT,
     qtdServicoAgendamento INT NOT NULL,
-    qtdProdutoAgendamento INT NOT NULL,
+    qtdProdutoAgendamento INT,
     subtotalDetalhe DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (idAgendamento) REFERENCES Agendamentos(idAgendamento),
     FOREIGN KEY (idServ) REFERENCES Servicos(idServ),
@@ -220,3 +220,9 @@ FROM Horarios_Disponiveis hd
 JOIN Funcionarios f ON hd.idFunc = f.idFunc
 WHERE DATE(hd.dataHorario) = CURDATE() and f.idFunc = 1  and hd.disponivel = TRUE-- clausula para mostrar apenas horários disponiveis, so alterar true para false, caso queira mudar
 ORDER BY f.nomeFunc, hd.dataHorario;
+
+SELECT * from agendamentos;
+
+SELECT * from detalhes_agendamentos where `idAgendamento` = 3;
+
+select * from horarios_disponiveis where disponivel = false;
